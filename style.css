@@ -1,4 +1,116 @@
-/* The Dude */
+@import url('https://fonts.googleapis.com/css?family=Archivo|Ewert|Pacifico&display=swap');
+
+:root {
+  --neon-color: #ff4133;
+  --neon-color-2: #2b9dae;
+}
+
+body {
+  background-color: black;
+  font-family: 'Archivo', sans-serif;
+  font-size: 20px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: white;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: 'Pacifico', cursive;
+  font-size: 2.4em;
+  line-height: 1.2;
+  color: #f8f8f8;
+  -webkit-transform: translateZ(0) translate3D(0, 0, 0);
+          transform: translateZ(0) translate3D(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+  will-change: opacity;
+  text-shadow: 0 0 0 transparent, 0 0 50px var(--neon-color), 0 0 10px var(--neon-color), 0 0 20px var(--neon-color), 0 0 50px var(--neon-color), 0 0 100px var(--neon-color), 0 0 150px var(--neon-color), 0 0 250px var(--neon-color);
+  -webkit-animation: buzz 0.01s infinite alternate;
+          animation: buzz 0.01s infinite alternate;
+}
+
+.country {
+  font-family: 'Ewert', cursive;
+  text-transform: uppercase;
+  font-size: 1.2em;
+}
+
+@-webkit-keyframes buzz {
+  90% {
+    opacity: 0.93;
+  }
+}
+
+@keyframes buzz {
+  90% {
+    opacity: 0.93;
+  }
+}
+@-webkit-keyframes blink {
+  40% {
+    opacity: 1;
+  }
+  42% {
+    opacity: 0.8;
+  }
+  43% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.4;
+  }
+  46% {
+    opacity: 1;
+  }
+}
+@keyframes blink {
+  40% {
+    opacity: 1;
+  }
+  42% {
+    opacity: 0.8;
+  }
+  43% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.4;
+  }
+  46% {
+    opacity: 1;
+  }
+}
+
+button {
+  /* background-color: var(--neon-color-2); */
+  background: none;
+  border: none;
+  border-radius: 5px;
+  font-family: 'Pacifico', cursive;
+  padding: 8px 16px;
+  font-size: 1.8em;
+  color: white;
+  text-shadow: 0 0 0 transparent, 0 0 50px var(--neon-color-2), 0 0 10px var(--neon-color-2), 0 0 20px var(--neon-color-2), 0 0 50px var(--neon-color-2), 0 0 100px var(--neon-color-2), 0 0 150px var(--neon-color-2), 0 0 250px var(--neon-color-2);
+  -webkit-animation: blink 4s infinite alternate;
+          animation: blink 4s infinite alternate;
+}
+
+button:hover {
+  text-decoration: underline;
+}
+
+#title {
+  margin: 50px 0px;
+}
+
+.dude-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* justify-content: flex-start; */
+  height: 100vh;
+}
+
 .pop, .popup_wrapper, .popup_background {
   transition: all 0.3s;
   background-color: "white";
@@ -7,19 +119,19 @@
 .pop {
   width: 700px;
   height: 600px;
-  background-color: #ccc;
+  background-color: black;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
 }
-.pop h1, .pop h3, .pop h4, .pop p, .pop button {
+/* .pop h1, .pop h3, .pop h4, .pop p {
   color: white;
-}
-.pop button {
+} */
+/* .pop button {
   border: 3px solid #f8f8f8;
-}
+} */
 
 #pop-end-buttons {
   display: flex;
@@ -34,12 +146,6 @@
   width: 200px;
   border: 3px solid #f8f8f8;
   background-color: #cca8a7;
-}
-
-.dude-row {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 #instructions {

@@ -130,13 +130,13 @@ function updateGameArea() {
 	}
 }
 // Intro layover div
-box.innerHTML = "<div class='pop'><h1>the dude abides</h1><p>This game is designed to be played with a keyboard.<br>It does contain flashing lights.</p><button id='start1' class='button' onclick='popup2()'>Continue</button></div>";
+box.innerHTML = `<div class='pop'><p>This game is designed to be played with a keyboard.<br>It does contain flashing lights.</p><button id='start1' class='button' onclick='popup2()'>Continue</button></div>`;
 
-document.getElementById("start1").focus();
+document.getElementById("start1");
 
 function popup2() {
-  box.innerHTML = "<div class='pop'><h3>how to play</h3><p> Use the arrow keys to navigate the Dude.</p><p>Help him get his bowling gear before the big game tonight.</p><button id='start2' class='button' onclick='beginGame();'>Begin</button></div>";
-  document.getElementById("start2").focus();
+  box.innerHTML = `<div class='pop'><p>The Dude needs his bowling gear for the big game tonight. Use the arrow keys to help him get his stuff.</p><button id='start2' class='button' onclick='beginGame();'>Begin</button></div>`;
+  document.getElementById("start2");
 }
 
 function beginGame() {

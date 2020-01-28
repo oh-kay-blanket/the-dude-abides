@@ -182,16 +182,11 @@ function startGame() {
 function gameOver() {
 	myGameArea.stop();
 	myGameArea.clear();
-	box.innerHTML = '<div class="pop"><h1>Thanks for playing</h1><p>The Dude Abides was built entirely by Michael Plunkett using Javascript and HTML Canvas.<br>It was inspired by the works of the Coen Brothers and David Lynch.</p><div id="pop-end-buttons"><button id="end1" class="button" onclick="frontPage()">Home</button><button class="button" onclick="contactMe()">Contact Me</button><button class="button" onclick="location.reload()">Play Again</button></div></div>';
-  document.getElementById("end1").focus();
+	box.innerHTML = '<div class="pop"><h1>Thanks for playing</h1><p>The Dude Abides was built entirely by Michael Plunkett using Javascript and HTML Canvas. It was inspired by the works of the Coen Brothers and David Lynch.</p><div id="pop-end-buttons"><button class="button" onclick="location.reload()">Play Again</button><button class="button" onclick="frontPage()">Mr. Plunkett</button></div></div>';
 }
 
 function frontPage() {
-	window.location.href = "/";
-}
-
-function contactMe() {
-	window.location.href = "/about/#contact";
+	window.location.href = "https://mrplunkett.com";
 }
 
 // Running game

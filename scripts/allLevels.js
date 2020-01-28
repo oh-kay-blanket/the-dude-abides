@@ -111,7 +111,7 @@ let myGameArea = {
     window.addEventListener('keyup', function (e) {
 			myGameArea.keys[e.keyCode] = false;
     })
-		document.getElementById("instructions").innerHTML = '<button type="button" class="button" onclick="myGameArea.stop();myGameArea.clear();startGame();">Restart Level</button>';
+		// document.getElementById("instructions").innerHTML = '<button type="button" class="button" onclick="myGameArea.stop();myGameArea.clear();startGame();">Restart Level</button>';
   },
   clear : function() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
