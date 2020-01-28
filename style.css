@@ -1,0 +1,48 @@
+/* The Dude */
+.pop, .popup_wrapper, .popup_background {
+  transition: all 0.3s;
+  background-color: "white";
+}
+
+.pop {
+  width: 700px;
+  height: 600px;
+  background-color: #ccc;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.pop h1, .pop h3, .pop h4, .pop p, .pop button {
+  color: white;
+}
+.pop button {
+  border: 3px solid #f8f8f8;
+}
+
+#pop-end-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+#hitHelp {
+  margin-top: 4px;
+  padding: 6px;
+  font-weight: bold;
+  width: 200px;
+  border: 3px solid #f8f8f8;
+  background-color: #cca8a7;
+}
+
+.dude-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#instructions {
+  max-width: 100px;
+  margin: 0px;
+}
