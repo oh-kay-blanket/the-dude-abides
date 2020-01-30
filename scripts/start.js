@@ -50,6 +50,9 @@ function startGame() {
 	tub = new component(95, 50, '', -605, 35, 'image', 'img/tubFull.png',true);
   thug1 = new component(42, 68, '', -327, 362, 'spriteFour', 'img/thug1.png','dl','',16,0,0,0);
 	thug2 = new component(42, 68, '', -331, 55, 'spriteFour', 'img/thug2.png','dr','',16,4,0,0);
+	dark1 = new component(700, 600, "rgba(0, 0, 0, 1)", 0, 0, '','');
+	dark1.dark = true;
+  dark1.darkGrade = 1;
 
 	// Characters
 	dude.x = 370;
@@ -63,11 +66,11 @@ function startGame() {
 	talk1 = new component(``, ``, ``, ``, ``,`text`,`Why is my door open?`);
 
 	// Reset var
-  setPieces = [dudeEntranceBackground, leftBorderEntrance, openDoor, car, homeBackground, leftBorder, rightBorder, topBorder, bottomBorder, barPiece, wallPiece1, wallPiece2, wallPiece3, wallPiece4, wallPiece5, exitDoor, entryDoorHome, rug, couch, table, table2, table3, counterTop, counterBottom, fridge, bed, dresser, ball, ballBag, toilet, sink, tub, thug1, thug2];
+  setPieces = [dudeEntranceBackground, leftBorderEntrance, openDoor, car, homeBackground, leftBorder, rightBorder, topBorder, bottomBorder, barPiece, wallPiece1, wallPiece2, wallPiece3, wallPiece4, wallPiece5, exitDoor, entryDoorHome, rug, couch, table, table2, table3, counterTop, counterBottom, fridge, bed, dresser, ball, ballBag, toilet, sink, tub, thug1, thug2, dark1];
 
   obstacles = [leftBorderEntrance, rightBorderEntrance, topBorderEntrance, bottomBorderEntrance, fauxCar1, fauxCar2, entryDoor];
 
-  movingSet = [dudeEntranceBackground, leftBorderEntrance, leftBorderEntranceSecret, openDoor, car, homeBackground, leftBorder, rightBorder, rightBorderSecret, topBorder, bottomBorder, barPiece, wallPiece1, wallPiece2, wallPiece3, wallPiece4, wallPiece5, exitDoor, entryDoorHome, rug, couch, table, table2, table3, counterTop, counterBottom, fridge, bed, dresser, ball, ballBag, toilet, sink, tub, thug1, thug2, dude];
+  movingSet = [dudeEntranceBackground, leftBorderEntrance, leftBorderEntranceSecret, openDoor, car, homeBackground, leftBorder, rightBorder, rightBorderSecret, topBorder, bottomBorder, barPiece, wallPiece1, wallPiece2, wallPiece3, wallPiece4, wallPiece5, exitDoor, entryDoorHome, rug, couch, table, table2, table3, counterTop, counterBottom, fridge, bed, dresser, ball, ballBag, toilet, sink, tub, thug1, thug2, dude, dark1];
 
 	o = 0;
   i = 0;
@@ -128,18 +131,52 @@ function updateGameArea() {
 	if (t1Show){
     dude.talk(talk1,50,60);
 	}
-}
-// Intro layover div
-box.innerHTML = `<div class='pop'><p>This game is designed to be played with a keyboard.<br>It does contain flashing lights.</p><button id='start1' class='button' onclick='popup2()'>Continue</button></div>`;
 
-document.getElementById("start1");
+	if (dark1.darkGrade > 0) {
+		setTimeout(() => {
+			dark1.undarken(4,0.02);
+		},2000);
+		dark1.update();
+	}
+}
+// Game Intro
+(function() {
+	// Begin box
+	box.innerHTML = `<div class='pop'><button id='start1' class='button' onclick='popup2()'>Begin</button></div>`;
+
+	// Title display flicker
+	setTimeout(() => {
+		document.getElementById("title").style.display = 'block';
+	}, 600);
+	setTimeout(() => {
+		document.getElementById("title").style.display = 'none';
+	}, 620);
+	setTimeout(() => {
+		document.getElementById("title").style.display = 'block';
+	}, 1600);
+	setTimeout(() => {
+		document.getElementById("title").style.display = 'none';
+	}, 1620);
+	setTimeout(() => {
+		document.getElementById("title").style.display = 'block';
+	}, 1800);
+
+	// Begin button
+	setTimeout(() => {
+		document.getElementById("start1").style.display = 'block';
+	}, 4000);
+})();
+
 
 function popup2() {
-  box.innerHTML = `<div class='pop'><p>The Dude needs his bowling gear for the big game tonight. Use the arrow keys to help him get his stuff.</p><button id='start2' class='button' onclick='beginGame();'>Begin</button></div>`;
-  document.getElementById("start2");
+  box.innerHTML = `<div class='pop'><p>The Dude needs his bowling gear for the big game tonight.<br>Use the arrow keys to help him get his stuff.</p>`;
+
+	setTimeout(() => {
+		beginGame();
+	}, 4500);
 }
 
 function beginGame() {
   box.innerHTML = '';
-  startGame();
+	startGame();
 }
