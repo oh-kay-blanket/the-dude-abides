@@ -182,7 +182,7 @@ function startGame() {
 function gameOver() {
 	myGameArea.stop();
 	myGameArea.clear();
-	box.innerHTML = '<div class="pop"><h1>Thanks for playing</h1><p>The Dude Abides was built entirely by Michael Plunkett using Javascript and HTML Canvas. It was inspired by the works of the Coen Brothers and David Lynch.</p><div id="pop-end-buttons"><button class="button" onclick="location.reload()">Play Again</button><button class="button"><a href="https://ohkayblanket.com>Michael Plunkett</a></button></div></div>';
+	box.innerHTML = '<div class="pop"><h1>Thanks for playing</h1><p>The Dude Abides was built entirely by Kayla Plunkett using Javascript and HTML Canvas. It was inspired by the works of the Coen Brothers and David Lynch.</p><div id="pop-end-buttons"><button class="button" onclick="location.reload()">Play Again</button><button class="button"><a href="https://ohkayblanket.com>ohkayblanket.com</a></button></div></div>';
 }
 
 function frontPage() {
