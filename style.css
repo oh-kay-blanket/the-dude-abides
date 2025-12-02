@@ -106,15 +106,29 @@ button:hover {
   text-decoration: underline;
 }
 
+#introContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
 #title {
-  display: none;
-  margin: 40px 0px 40px;
+  margin: 0;
   opacity: 1;
   transition: opacity 2s ease-out;
 }
 
 #title.fade-out {
   opacity: 0;
+}
+
+#beginContainer {
+  /* Container for Begin button */
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #start1 {
@@ -125,7 +139,7 @@ button:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* justify-content: center; */
+  justify-content: center;
   height: 100vh;
 }
 
@@ -167,6 +181,10 @@ button:hover {
 #instructions {
   max-width: 100px;
   margin: 0px;
+}
+
+#dudeBox {
+  visibility: hidden;
 }
 
 canvas {
@@ -222,27 +240,14 @@ canvas {
     object-fit: contain;
   }
 
-  /* Allow title to show during intro, controlled by JavaScript */
+  /* Title styling for mobile */
   #title {
     padding: 0 20px;
-    position: absolute;
-    top: 5vh;
-    width: 100%;
-    z-index: 10;
   }
 
   #title h1 {
     font-size: 2.2em;
     margin: 20px 0;
-    display: flex;
-    flex-direction: column;
-    line-height: 1.5;
-    align-items: center;
-    text-align: center;
-  }
-
-  #title h1 span {
-    display: block;
   }
 
   /* Position popups below title on mobile */

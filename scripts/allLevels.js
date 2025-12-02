@@ -420,6 +420,11 @@ let touchInputSystem = {
 
   // Check if movement is currently allowed
   isMovementAllowed: function() {
+    // Check if touch system is ready
+    if (!this.ready) {
+      return false;
+    }
+
     // Check if game has started (myGameArea.frameNo exists and is greater than 0)
     if (!myGameArea.frameNo || myGameArea.frameNo === 0) {
       return false;

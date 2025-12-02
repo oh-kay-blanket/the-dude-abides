@@ -155,24 +155,28 @@ function updateGameArea() {
 	if (dark1.darkGrade > 0) {
 		setTimeout(() => {
 			dark1.undarken(4,0.02);
-			// Enable joystick 2 seconds after fade starts (4 seconds total)
-			setTimeout(() => {
-				if (typeof touchInputSystem !== 'undefined' && touchInputSystem.enabled) {
-					touchInputSystem.ready = true;
-					const joystickContainer = document.getElementById('virtualJoystick');
-					if (joystickContainer) {
-						joystickContainer.classList.remove('disabled');
-					}
-				}
-			}, 4000);
 		},2000);
 		dark1.update();
+	}
+
+	// Enable joystick only after fade completes (2s delay + 3.5s fade = 5.5s total)
+	if (dark1.darkGrade > 0 && typeof touchInputSystem !== 'undefined' && touchInputSystem.enabled) {
+		setTimeout(() => {
+			touchInputSystem.ready = true;
+			const joystickContainer = document.getElementById('virtualJoystick');
+			if (joystickContainer) {
+				joystickContainer.classList.remove('disabled');
+			}
+		}, 5500);
 	}
 }
 // Game Intro
 (function() {
-	// Begin box
-	box.innerHTML = `<div class='pop'><button id='start1' class='button' onclick='popup2()'>Begin</button></div>`;
+	// Insert Begin button into beginContainer
+	const beginContainer = document.getElementById('beginContainer');
+	if (beginContainer) {
+		beginContainer.innerHTML = `<button id='start1' class='button' onclick='popup2()'>Play</button>`;
+	}
 
 	const titleElement = document.getElementById("title");
 	const titleH1 = titleElement.querySelector('h1');
@@ -182,7 +186,9 @@ function updateGameArea() {
 
 	// Wait for fonts to load before starting animation
 	const startIntro = () => {
-		titleElement.style.display = 'block';
+		// Show dudeBox for intro
+		const dudeBox = document.getElementById('dudeBox');
+		if (dudeBox) dudeBox.style.visibility = 'visible';
 
 		// Slow flicker in for "The Dude"
 		setTimeout(() => {
@@ -229,38 +235,58 @@ function updateGameArea() {
 
 
 function popup2() {
-  box.innerHTML = `<div class='pop'><p>The Dude needs his bowling gear for the big game tonight.</p>`;
+  const beginContainer = document.getElementById('beginContainer');
+  if (beginContainer) {
+    beginContainer.innerHTML = `<p style="color: white; text-align: center; font-family: helvetica; opacity: 0; transition: opacity 0.5s ease-in-out;">The Dude has a qualifying round tonight.<br>Make sure he grabs his bowling gear.</p>`;
+
+    // Fade in the instruction text
+    const instructionText = beginContainer.querySelector('p');
+    if (instructionText) {
+      setTimeout(() => {
+        instructionText.style.opacity = '1';
+      }, 50);
+
+      // Fade out before transitioning to game
+      setTimeout(() => {
+        instructionText.style.opacity = '0';
+      }, 4000);
+    }
+  }
 
 	setTimeout(() => {
 		beginGame();
-	}, 4500);
+	}, 5500);
 }
 
 function beginGame() {
-  box.innerHTML = '';
-
-	// Fade out title
+	const introContainer = document.getElementById('introContainer');
 	const titleElement = document.getElementById("title");
+
+	// Step 1: Fade out title (keep instruction text visible)
 	if (titleElement) {
 		titleElement.classList.add('fade-out');
-		// Hide completely after fade completes
-		setTimeout(() => {
-			titleElement.style.display = 'none';
-		}, 2000);
 	}
 
-	// Create and show black canvas immediately
-	const canvas = document.createElement("canvas");
-	canvas.width = 700;
-	canvas.height = 600;
-	const ctx = canvas.getContext("2d");
-	ctx.fillStyle = 'black';
-	ctx.fillRect(0, 0, 700, 600);
-	box.appendChild(canvas);
-
-	// Wait before starting the game to prevent flash
+	// Step 2: After fade completes (2000ms), remove intro and insert canvas
 	setTimeout(() => {
-		box.innerHTML = '';
-		startGame();
-	}, 100);
+		// Hide dudeBox before removing intro
+		const dudeBox = document.getElementById('dudeBox');
+		if (dudeBox) dudeBox.style.visibility = 'hidden';
+
+		// Remove entire intro container
+		if (introContainer) {
+			introContainer.remove();
+		}
+
+		// Small delay to ensure visibility change is applied
+		setTimeout(() => {
+			// Step 3: Start game and insert canvas into dudeBox
+			startGame();
+
+			// Show dudeBox after canvas is loaded with additional delay
+			setTimeout(() => {
+				if (dudeBox) dudeBox.style.visibility = 'visible';
+			}, 50);
+		}, 50);
+	}, 2000); // Wait for full fade-out
 }
