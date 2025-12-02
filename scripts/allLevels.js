@@ -92,16 +92,33 @@ badDude = new component(42, 68, "", 335, 297, 'spriteFour', 'img/badDude.png','d
 // Canvas setup
 let myGameArea = {
   canvas : document.createElement("canvas"),
+  lastFrameTime : 0,
+  targetFPS : 60,
   start : function() {
     this.canvas.width = 700;
     this.canvas.height = 600;
     this.context = this.canvas.getContext("2d");
+    // Fill with black BEFORE appending to prevent flash
+    this.context.fillStyle = 'black';
+    this.context.fillRect(0, 0, 700, 600);
     box.appendChild(this.canvas);
 		cancelAnimationFrame(globalID);
 		this.frameNo = 0;
-    function animate() {
+		this.lastFrameTime = performance.now();
+    const fpsInterval = 1000 / this.targetFPS;
+
+    function animate(currentTime) {
         globalID = requestAnimationFrame(animate);
-        updateGameArea();
+
+        // Calculate elapsed time since last frame
+        const elapsed = currentTime - myGameArea.lastFrameTime;
+
+        // Only update if enough time has elapsed (60 FPS cap)
+        if (elapsed > fpsInterval) {
+          // Adjust for frame interval drift
+          myGameArea.lastFrameTime = currentTime - (elapsed % fpsInterval);
+          updateGameArea();
+        }
     };
     globalID = requestAnimationFrame(animate);
 		myGameArea.keys = (myGameArea.keys || []);
@@ -114,7 +131,8 @@ let myGameArea = {
 		// document.getElementById("instructions").innerHTML = '<button type="button" class="button" onclick="myGameArea.stop();myGameArea.clear();startGame();">Restart Level</button>';
   },
   clear : function() {
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.context.fillStyle = 'black';
+    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
   },
 	stop : function() {
     cancelAnimationFrame(globalID);
@@ -124,6 +142,332 @@ let myGameArea = {
     globalID = requestAnimationFrame(animate);
   }
 }
+
+// ============================================
+// MOBILE TOUCH CONTROLS SYSTEM
+// ============================================
+
+let touchInputSystem = {
+  enabled: false,
+  ready: false, // New flag to control when joystick can be used
+  joystick: {
+    active: false,
+    startX: 0,
+    startY: 0,
+    currentX: 0,
+    currentY: 0,
+    centerX: 0,
+    centerY: 0,
+    maxDistance: 35, // Max stick travel distance (half of base minus stick radius)
+    deadZone: 0.2, // 20% dead zone to prevent drift
+    angle: 0,
+    magnitude: 0
+  },
+  actionButtons: {
+    visible: false,
+    leftPressed: false,
+    rightPressed: false
+  },
+
+  // Initialize touch controls
+  init: function() {
+    // Detect mobile device
+    this.enabled = this.isMobileDevice();
+
+    if (!this.enabled) return;
+
+    // Get DOM elements
+    const joystickContainer = document.getElementById('virtualJoystick');
+    const joystickStick = document.querySelector('.joystick-stick');
+    const actionLeft = document.getElementById('actionLeft');
+    const actionRight = document.getElementById('actionRight');
+    const actionButtons = document.getElementById('actionButtons');
+
+    if (!joystickContainer || !joystickStick) return;
+
+    // Store elements
+    this.elements = {
+      joystickContainer,
+      joystickStick,
+      actionLeft,
+      actionRight,
+      actionButtons
+    };
+
+    // Start with joystick disabled
+    joystickContainer.classList.add('disabled');
+
+    // Calculate joystick center (relative to viewport)
+    this.updateJoystickCenter();
+
+    // Joystick touch events
+    joystickContainer.addEventListener('touchstart', this.onJoystickStart.bind(this), { passive: false });
+    document.addEventListener('touchmove', this.onJoystickMove.bind(this), { passive: false });
+    document.addEventListener('touchend', this.onJoystickEnd.bind(this), { passive: false });
+
+    // Action button events
+    if (actionLeft) {
+      actionLeft.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.actionButtons.leftPressed = true;
+        myGameArea.keys[65] = true; // A key
+      }, { passive: false });
+
+      actionLeft.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        this.actionButtons.leftPressed = false;
+        myGameArea.keys[65] = false;
+      }, { passive: false });
+    }
+
+    if (actionRight) {
+      actionRight.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.actionButtons.rightPressed = true;
+        myGameArea.keys[68] = true; // D key
+      }, { passive: false });
+
+      actionRight.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        this.actionButtons.rightPressed = false;
+        myGameArea.keys[68] = false;
+      }, { passive: false });
+    }
+
+    // Window resize handler
+    window.addEventListener('resize', this.updateJoystickCenter.bind(this));
+
+    // Periodically update joystick visual state (every 100ms)
+    setInterval(() => {
+      if (this.enabled && this.elements && !this.joystick.active) {
+        const movementAllowed = this.isMovementAllowed();
+        this.updateJoystickVisual(movementAllowed);
+      }
+    }, 100);
+  },
+
+  // Mobile detection
+  isMobileDevice: function() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+           || window.innerWidth <= 768
+           || window.innerHeight <= 768;
+  },
+
+  // Update joystick center position
+  updateJoystickCenter: function() {
+    if (!this.elements) return;
+    const rect = this.elements.joystickContainer.getBoundingClientRect();
+    this.joystick.centerX = rect.left + rect.width / 2;
+    this.joystick.centerY = rect.top + rect.height / 2;
+  },
+
+  // Joystick start
+  onJoystickStart: function(e) {
+    if (!this.ready) return; // Don't allow joystick until ready
+    e.preventDefault();
+    const touch = e.touches[0];
+    this.joystick.active = true;
+    this.joystick.startX = touch.clientX;
+    this.joystick.startY = touch.clientY;
+  },
+
+  // Joystick move
+  onJoystickMove: function(e) {
+    if (!this.joystick.active) return;
+    e.preventDefault();
+
+    const touch = e.touches[0];
+
+    // Calculate offset from center
+    let deltaX = touch.clientX - this.joystick.centerX;
+    let deltaY = touch.clientY - this.joystick.centerY;
+
+    // Calculate distance and angle
+    let distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    let angle = Math.atan2(deltaY, deltaX);
+
+    // Clamp to max distance
+    if (distance > this.joystick.maxDistance) {
+      distance = this.joystick.maxDistance;
+      deltaX = Math.cos(angle) * this.joystick.maxDistance;
+      deltaY = Math.sin(angle) * this.joystick.maxDistance;
+    }
+
+    // Calculate magnitude (0-1)
+    let magnitude = distance / this.joystick.maxDistance;
+
+    // Apply dead zone
+    if (magnitude < this.joystick.deadZone) {
+      magnitude = 0;
+      deltaX = 0;
+      deltaY = 0;
+    }
+
+    // Update joystick state
+    this.joystick.currentX = deltaX;
+    this.joystick.currentY = deltaY;
+    this.joystick.angle = angle;
+    this.joystick.magnitude = magnitude;
+
+    // Update stick visual position
+    this.elements.joystickStick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+    // Map to arrow keys
+    this.updateKeyStates();
+  },
+
+  // Joystick end
+  onJoystickEnd: function(e) {
+    if (!this.joystick.active) return;
+
+    this.joystick.active = false;
+    this.joystick.currentX = 0;
+    this.joystick.currentY = 0;
+    this.joystick.magnitude = 0;
+
+    // Reset stick position
+    this.elements.joystickStick.style.transform = 'translate(0, 0)';
+
+    // Clear all arrow keys
+    myGameArea.keys[37] = false; // Left
+    myGameArea.keys[38] = false; // Up
+    myGameArea.keys[39] = false; // Right
+    myGameArea.keys[40] = false; // Down
+
+    // Update visual state even when not touching
+    const movementAllowed = this.isMovementAllowed();
+    this.updateJoystickVisual(movementAllowed);
+  },
+
+  // Map joystick angle/magnitude to arrow key states
+  updateKeyStates: function() {
+    // Check if movement is allowed
+    const movementAllowed = this.isMovementAllowed();
+
+    // Update joystick visual state
+    this.updateJoystickVisual(movementAllowed);
+
+    // Don't process input if movement is blocked
+    if (!movementAllowed || this.joystick.magnitude === 0) {
+      myGameArea.keys[37] = false;
+      myGameArea.keys[38] = false;
+      myGameArea.keys[39] = false;
+      myGameArea.keys[40] = false;
+      return;
+    }
+
+    // Convert angle to degrees
+    let degrees = this.joystick.angle * (180 / Math.PI);
+
+    // Normalize to 0-360
+    if (degrees < 0) degrees += 360;
+
+    // 8-directional mapping with 45-degree zones
+    // Right: -22.5 to 22.5 (337.5 to 22.5)
+    // Down-Right: 22.5 to 67.5
+    // Down: 67.5 to 112.5
+    // Down-Left: 112.5 to 157.5
+    // Left: 157.5 to 202.5
+    // Up-Left: 202.5 to 247.5
+    // Up: 247.5 to 292.5
+    // Up-Right: 292.5 to 337.5
+
+    // Reset all keys
+    myGameArea.keys[37] = false; // Left
+    myGameArea.keys[38] = false; // Up
+    myGameArea.keys[39] = false; // Right
+    myGameArea.keys[40] = false; // Down
+
+    // Horizontal input
+    if ((degrees >= 337.5 && degrees <= 360) || (degrees >= 0 && degrees < 22.5)) {
+      myGameArea.keys[39] = true; // Right
+    } else if (degrees >= 22.5 && degrees < 67.5) {
+      myGameArea.keys[39] = true; // Right
+      myGameArea.keys[40] = true; // Down
+    } else if (degrees >= 67.5 && degrees < 112.5) {
+      myGameArea.keys[40] = true; // Down
+    } else if (degrees >= 112.5 && degrees < 157.5) {
+      myGameArea.keys[37] = true; // Left
+      myGameArea.keys[40] = true; // Down
+    } else if (degrees >= 157.5 && degrees < 202.5) {
+      myGameArea.keys[37] = true; // Left
+    } else if (degrees >= 202.5 && degrees < 247.5) {
+      myGameArea.keys[37] = true; // Left
+      myGameArea.keys[38] = true; // Up
+    } else if (degrees >= 247.5 && degrees < 292.5) {
+      myGameArea.keys[38] = true; // Up
+    } else if (degrees >= 292.5 && degrees < 337.5) {
+      myGameArea.keys[39] = true; // Right
+      myGameArea.keys[38] = true; // Up
+    }
+  },
+
+  // Show/hide action buttons
+  setActionButtonsVisible: function(visible) {
+    if (!this.elements || !this.enabled) return;
+    this.actionButtons.visible = visible;
+    if (visible) {
+      this.elements.actionButtons.classList.add('visible');
+    } else {
+      this.elements.actionButtons.classList.remove('visible');
+      // Reset button states
+      myGameArea.keys[65] = false;
+      myGameArea.keys[68] = false;
+      this.actionButtons.leftPressed = false;
+      this.actionButtons.rightPressed = false;
+    }
+  },
+
+  // Check if movement is currently allowed
+  isMovementAllowed: function() {
+    // Check if game has started (myGameArea.frameNo exists and is greater than 0)
+    if (!myGameArea.frameNo || myGameArea.frameNo === 0) {
+      return false;
+    }
+
+    // Check common movement blocking conditions
+    if (typeof window.setChanging !== 'undefined' && window.setChanging) {
+      return false;
+    }
+    if (typeof setChanging !== 'undefined' && setChanging) {
+      return false;
+    }
+    if (typeof window.dudeCanMove !== 'undefined' && !window.dudeCanMove) {
+      return false;
+    }
+    if (typeof dudeCanMove !== 'undefined' && !dudeCanMove) {
+      return false;
+    }
+    return true;
+  },
+
+  // Update joystick visual appearance based on movement state
+  updateJoystickVisual: function(movementAllowed) {
+    if (!this.elements || !this.elements.joystickContainer) return;
+
+    const container = this.elements.joystickContainer;
+    const hasDisabled = container.classList.contains('disabled');
+
+    if (movementAllowed) {
+      if (hasDisabled) {
+        container.classList.remove('disabled');
+      }
+    } else {
+      if (!hasDisabled) {
+        container.classList.add('disabled');
+      }
+      // Prevent joystick from moving when disabled
+      if (this.joystick.active) {
+        this.elements.joystickStick.style.transform = 'translate(0, 0)';
+      }
+    }
+  }
+};
+
+// Initialize touch controls after DOM loads
+window.addEventListener('DOMContentLoaded', function() {
+  touchInputSystem.init();
+});
 
 // Count Frames
 function everyinterval(n) {
@@ -1308,24 +1652,43 @@ function loadDudeMechanics() {
 	dude.speedX = 0;
 	dude.speedY = 0;
 
+	// Get speed multiplier from touch joystick (1.0 for keyboard, variable for touch)
+	let speedMultiplier = 1.0;
+	if (typeof touchInputSystem !== 'undefined' && touchInputSystem.enabled && touchInputSystem.joystick.active) {
+		// Map joystick magnitude to speed: 0.5x at threshold, 1.0x at full extension
+		const magnitude = touchInputSystem.joystick.magnitude;
+		const slowThreshold = 0.5; // 50% of max distance
+
+		if (magnitude < slowThreshold) {
+			// Slow speed: map 0.2-0.5 magnitude to 0.5x speed
+			speedMultiplier = 0.5;
+		} else {
+			// Full speed: map 0.5-1.0 magnitude to 1.0x speed
+			speedMultiplier = 1.0;
+		}
+	}
+
+	const baseSpeed = 2;
+	const speed = baseSpeed * speedMultiplier;
+
 	// Left
 	if (myGameArea.keys[37]) {
-		dude.speedX = -2;
+		dude.speedX = -speed;
 	}
 
 	// Right
 	if (myGameArea.keys[39]) {
-		dude.speedX = 2;
+		dude.speedX = speed;
 	}
 
 	// Bottom
 	if (myGameArea.keys[38]) {
-		dude.speedY = -2;
+		dude.speedY = -speed;
 	}
 
 	// Top
 	if (myGameArea.keys[40]) {
-		dude.speedY = 2;
+		dude.speedY = speed;
 	}
 	dude.obstacleCheck();
 	}
@@ -1334,31 +1697,47 @@ function loadDudeMechanics() {
 // Swimming
 function loadDudeSwimMechanics(character,speed,acceleration) {
 
+	// Get speed multiplier from touch joystick (1.0 for keyboard, variable for touch)
+	let speedMultiplier = 1.0;
+	if (typeof touchInputSystem !== 'undefined' && touchInputSystem.enabled && touchInputSystem.joystick.active) {
+		const magnitude = touchInputSystem.joystick.magnitude;
+		const slowThreshold = 0.5; // 50% of max distance
+
+		if (magnitude < slowThreshold) {
+			speedMultiplier = 0.5;
+		} else {
+			speedMultiplier = 1.0;
+		}
+	}
+
+	const adjustedSpeed = speed * speedMultiplier;
+	const adjustedAcceleration = acceleration * speedMultiplier;
+
 	// Left
 	if (myGameArea.keys[37]) {
-		if(character.speedX > -speed) {
-			character.speedX += -acceleration;
+		if(character.speedX > -adjustedSpeed) {
+			character.speedX += -adjustedAcceleration;
 		}
 	}
 
 	// Right
 	if (myGameArea.keys[39]) {
-			if(character.speedX < speed) {
-				character.speedX += acceleration;
+			if(character.speedX < adjustedSpeed) {
+				character.speedX += adjustedAcceleration;
 			}
 	}
 
 	// Bottom
 	if (myGameArea.keys[38]) {
-	 	if (character.speedY > -speed) {
-			character.speedY += -acceleration;
+	 	if (character.speedY > -adjustedSpeed) {
+			character.speedY += -adjustedAcceleration;
 		}
 	}
 
 	// Top
 	if (myGameArea.keys[40]) {
-		if (character.speedY < speed) {
-			character.speedY += acceleration;
+		if (character.speedY < adjustedSpeed) {
+			character.speedY += adjustedAcceleration;
 		}
 	}
 	character.dudeSwimObstacleCheck();

@@ -1,4 +1,12 @@
-@import url('https://fonts.googleapis.com/css?family=Archivo|Ewert|Pacifico&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Archivo&display=swap');
+
+@font-face {
+  font-family: 'Clip';
+  src: url('fonts/Clip.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
 
 :root {
   --neon-color: #ff4133;
@@ -20,7 +28,7 @@ body {
 }
 
 h1, h2, h3, h4, h5 {
-  font-family: 'Pacifico', cursive;
+  font-family: 'Clip', cursive;
   font-size: 2.4em;
   line-height: 1.2;
   color: #f8f8f8;
@@ -32,12 +40,6 @@ h1, h2, h3, h4, h5 {
   text-shadow: 0 0 0 transparent, 0 0 50px var(--neon-color), 0 0 10px var(--neon-color), 0 0 20px var(--neon-color), 0 0 50px var(--neon-color), 0 0 100px var(--neon-color), 0 0 150px var(--neon-color), 0 0 250px var(--neon-color);
   -webkit-animation: buzz 0.01s infinite alternate;
           animation: buzz 0.01s infinite alternate;
-}
-
-.country {
-  font-family: 'Ewert', cursive;
-  text-transform: uppercase;
-  font-size: 1.2em;
 }
 
 @-webkit-keyframes buzz {
@@ -91,7 +93,7 @@ button {
   background: none;
   border: none;
   border-radius: 5px;
-  font-family: 'Pacifico', cursive;
+  font-family: 'Clip', cursive;
   padding: 8px 16px;
   font-size: 1.8em;
   color: white;
@@ -107,6 +109,12 @@ button:hover {
 #title {
   display: none;
   margin: 40px 0px 40px;
+  opacity: 1;
+  transition: opacity 2s ease-out;
+}
+
+#title.fade-out {
+  opacity: 0;
 }
 
 #start1 {
@@ -159,4 +167,223 @@ button:hover {
 #instructions {
   max-width: 100px;
   margin: 0px;
+}
+
+canvas {
+  background-color: black;
+  border-radius: 3rem;
+}
+
+/* ============================================
+   MOBILE TOUCH CONTROLS
+   ============================================ */
+
+/* Base: Hide controls on desktop */
+.touch-controls {
+  display: none;
+}
+
+/* Mobile styles */
+@media (max-width: 768px), (max-height: 768px) {
+
+  /* Show touch controls */
+  .touch-controls {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none; /* Allow canvas clicks through */
+    z-index: 1000;
+  }
+
+  /* Scale canvas container */
+  .dude-row {
+    height: 100vh;
+    justify-content: flex-start;
+    overflow: hidden;
+  }
+
+  #dudeBox {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: calc(20vh);
+  }
+
+  #dudeBox canvas {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain;
+  }
+
+  /* Allow title to show during intro, controlled by JavaScript */
+  #title {
+    padding: 0 20px;
+    position: absolute;
+    top: 5vh;
+    width: 100%;
+    z-index: 10;
+  }
+
+  #title h1 {
+    font-size: 2.2em;
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.5;
+    align-items: center;
+    text-align: center;
+  }
+
+  #title h1 span {
+    display: block;
+  }
+
+  /* Position popups below title on mobile */
+  .pop {
+    position: absolute;
+    top: 35vh;
+    width: 90%;
+    max-width: 500px;
+    height: auto;
+    min-height: 200px;
+    padding: 30px 20px;
+  }
+
+  /* Virtual Joystick Styles */
+  .virtual-joystick {
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    width: 120px;
+    height: 120px;
+    pointer-events: all;
+  }
+
+  .joystick-base {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(43, 157, 174, 0.3), rgba(43, 157, 174, 0.1));
+    border: 3px solid rgba(43, 157, 174, 0.6);
+    box-shadow: 0 0 20px rgba(43, 157, 174, 0.4);
+    transition: all 0.3s ease;
+  }
+
+  .joystick-stick {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 65, 51, 0.8), rgba(255, 65, 51, 0.5));
+    border: 2px solid rgba(255, 65, 51, 1);
+    box-shadow: 0 0 15px rgba(255, 65, 51, 0.6);
+    top: 35px;
+    left: 35px;
+    transition: transform 0.05s, background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Disabled joystick state */
+  .virtual-joystick.disabled .joystick-base {
+    background: radial-gradient(circle, rgba(100, 100, 100, 0.3), rgba(80, 80, 80, 0.1)) !important;
+    border: 3px solid rgba(100, 100, 100, 0.4) !important;
+    box-shadow: 0 0 10px rgba(100, 100, 100, 0.3) !important;
+    opacity: 0.6 !important;
+  }
+
+  .virtual-joystick.disabled .joystick-stick {
+    background: radial-gradient(circle, rgba(120, 120, 120, 0.6), rgba(100, 100, 100, 0.4)) !important;
+    border: 2px solid rgba(120, 120, 120, 0.7) !important;
+    box-shadow: 0 0 8px rgba(100, 100, 100, 0.4) !important;
+    opacity: 0.4 !important;
+  }
+
+  /* Action Buttons */
+  .action-buttons {
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
+    display: none; /* Hidden by default, shown via JS */
+    gap: 20px;
+    pointer-events: all;
+  }
+
+  .action-buttons.visible {
+    display: flex;
+  }
+
+  .action-btn {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(43, 157, 174, 0.6), rgba(43, 157, 174, 0.3));
+    border: 3px solid rgba(43, 157, 174, 0.8);
+    color: white;
+    font-size: 24px;
+    font-family: 'Clip', cursive;
+    text-shadow: 0 0 10px var(--neon-color-2);
+    box-shadow: 0 0 20px rgba(43, 157, 174, 0.5);
+    cursor: pointer;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .action-btn:active {
+    background: radial-gradient(circle, rgba(255, 65, 51, 0.8), rgba(255, 65, 51, 0.4));
+    border-color: rgba(255, 65, 51, 1);
+    box-shadow: 0 0 25px rgba(255, 65, 51, 0.7);
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (orientation: landscape) and (max-height: 768px) {
+  #dudeBox {
+    padding-top: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+}
+
+@media (orientation: landscape) and (max-height: 768px) {
+  .virtual-joystick {
+    bottom: 30%;
+    left: 5%;
+    width: 100px;
+    height: 100px;
+  }
+
+  .joystick-base {
+    width: 100px;
+    height: 100px;
+  }
+
+  .joystick-stick {
+    width: 40px;
+    height: 40px;
+    top: 30px;
+    left: 30px;
+  }
+
+  .action-buttons {
+    bottom: 20px;
+    right: 30px;
+  }
+
+  .action-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 20px;
+  }
 }

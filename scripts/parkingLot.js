@@ -173,6 +173,12 @@ function startGame() {
 	maudeCome = false;
 	maudeGo = false;
 	dudeGotHit = false;
+
+	// Show action buttons for combat
+	if (typeof touchInputSystem !== 'undefined' && touchInputSystem.enabled) {
+		touchInputSystem.setActionButtonsVisible(true);
+	}
+
 	myGameArea.start();
 	dude.update();
 	walter.update();
@@ -180,6 +186,11 @@ function startGame() {
 
 // Game over
 function gameOver() {
+	// Hide action buttons when game ends
+	if (typeof touchInputSystem !== 'undefined' && touchInputSystem.enabled) {
+		touchInputSystem.setActionButtonsVisible(false);
+	}
+
 	myGameArea.stop();
 	myGameArea.clear();
 	box.innerHTML = '<div class="pop"><h1>Thanks for playing</h1><p>The Dude Abides was built entirely by Kayla Plunkett using Javascript and HTML Canvas. It was inspired by the works of the Coen Brothers and David Lynch.</p><div id="pop-end-buttons"><button class="button" onclick="location.reload()">Play Again</button><button class="button"><a href="https://ohkayblanket.com>ohkayblanket.com</a></button></div></div>';

@@ -1,5 +1,6 @@
 // Var setup
 let seeDoor = false;
+let initialFrames = 0;
 
 // Components
 function startGame() {
@@ -76,12 +77,31 @@ function startGame() {
   i = 0;
 	seeDoor = false;
   setChanging = false;
+	initialFrames = 0;
+
+	// Disable and gray out joystick initially
+	if (typeof touchInputSystem !== 'undefined' && touchInputSystem.enabled) {
+		touchInputSystem.ready = false;
+		const joystickContainer = document.getElementById('virtualJoystick');
+		if (joystickContainer) {
+			joystickContainer.classList.add('disabled');
+		}
+	}
+
 	myGameArea.start();
 	dude.update();
 }
 
 // Running game
 function updateGameArea() {
+
+	// Skip rendering for first 5 frames, just show black
+	if (initialFrames < 5) {
+		myGameArea.context.fillStyle = 'black';
+		myGameArea.context.fillRect(0, 0, 700, 600);
+		initialFrames++;
+		return;
+	}
 
 	// Dude movement mechanics
 	if (!setChanging) {
@@ -135,6 +155,16 @@ function updateGameArea() {
 	if (dark1.darkGrade > 0) {
 		setTimeout(() => {
 			dark1.undarken(4,0.02);
+			// Enable joystick 2 seconds after fade starts (4 seconds total)
+			setTimeout(() => {
+				if (typeof touchInputSystem !== 'undefined' && touchInputSystem.enabled) {
+					touchInputSystem.ready = true;
+					const joystickContainer = document.getElementById('virtualJoystick');
+					if (joystickContainer) {
+						joystickContainer.classList.remove('disabled');
+					}
+				}
+			}, 4000);
 		},2000);
 		dark1.update();
 	}
@@ -144,32 +174,62 @@ function updateGameArea() {
 	// Begin box
 	box.innerHTML = `<div class='pop'><button id='start1' class='button' onclick='popup2()'>Begin</button></div>`;
 
-	// Title display flicker
-	setTimeout(() => {
-		document.getElementById("title").style.display = 'block';
-	}, 600);
-	setTimeout(() => {
-		document.getElementById("title").style.display = 'none';
-	}, 620);
-	setTimeout(() => {
-		document.getElementById("title").style.display = 'block';
-	}, 1600);
-	setTimeout(() => {
-		document.getElementById("title").style.display = 'none';
-	}, 1620);
-	setTimeout(() => {
-		document.getElementById("title").style.display = 'block';
-	}, 1800);
+	const titleElement = document.getElementById("title");
+	const titleH1 = titleElement.querySelector('h1');
 
-	// Begin button
-	setTimeout(() => {
-		document.getElementById("start1").style.display = 'block';
-	}, 4000);
+	// Hide title initially
+	if (titleH1) titleH1.style.visibility = 'hidden';
+
+	// Wait for fonts to load before starting animation
+	const startIntro = () => {
+		titleElement.style.display = 'block';
+
+		// Slow flicker in for "The Dude"
+		setTimeout(() => {
+			if (titleH1) titleH1.style.visibility = 'visible';
+		}, 800);
+		setTimeout(() => {
+			if (titleH1) titleH1.style.visibility = 'hidden';
+		}, 890);
+		setTimeout(() => {
+			if (titleH1) titleH1.style.visibility = 'visible';
+		}, 1840);
+		setTimeout(() => {
+			if (titleH1) titleH1.style.visibility = 'hidden';
+		}, 1900);
+		setTimeout(() => {
+			if (titleH1) titleH1.style.visibility = 'visible';
+		}, 1940);
+		setTimeout(() => {
+			if (titleH1) titleH1.style.visibility = 'hidden';
+		}, 2000);
+		setTimeout(() => {
+			if (titleH1) titleH1.style.visibility = 'visible';
+		}, 2800);
+
+		// Begin button appears 3 seconds after final flicker
+		setTimeout(() => {
+			document.getElementById("start1").style.display = 'block';
+		}, 5400);
+	};
+
+	// Use Font Loading API to wait for fonts
+	if ('fonts' in document) {
+		document.fonts.load('2.4em Clip').then(() => {
+			startIntro();
+		}).catch(() => {
+			// Fallback: start anyway after 1 second if fonts fail to load
+			setTimeout(startIntro, 1000);
+		});
+	} else {
+		// Fallback for browsers without Font Loading API
+		setTimeout(startIntro, 1000);
+	}
 })();
 
 
 function popup2() {
-  box.innerHTML = `<div class='pop'><p>The Dude needs his bowling gear for the big game tonight.<br>Use the arrow keys to help him get his stuff.</p>`;
+  box.innerHTML = `<div class='pop'><p>The Dude needs his bowling gear for the big game tonight.</p>`;
 
 	setTimeout(() => {
 		beginGame();
@@ -178,5 +238,29 @@ function popup2() {
 
 function beginGame() {
   box.innerHTML = '';
-	startGame();
+
+	// Fade out title
+	const titleElement = document.getElementById("title");
+	if (titleElement) {
+		titleElement.classList.add('fade-out');
+		// Hide completely after fade completes
+		setTimeout(() => {
+			titleElement.style.display = 'none';
+		}, 2000);
+	}
+
+	// Create and show black canvas immediately
+	const canvas = document.createElement("canvas");
+	canvas.width = 700;
+	canvas.height = 600;
+	const ctx = canvas.getContext("2d");
+	ctx.fillStyle = 'black';
+	ctx.fillRect(0, 0, 700, 600);
+	box.appendChild(canvas);
+
+	// Wait before starting the game to prevent flash
+	setTimeout(() => {
+		box.innerHTML = '';
+		startGame();
+	}, 100);
 }
